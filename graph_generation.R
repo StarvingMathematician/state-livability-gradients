@@ -36,15 +36,20 @@ for (i in 1:nrow(adj_df)){
 
 ############################################################################################################
 
+# Get normalized diff to compute Markov probabilities. Most reasonable way to do things is for people to
+# always move towards states which are better. Note that the resulting MC is not ergotic; some states are
+# pure sinks (e.g. Oregon, Florida, Montana)
+# 
+# Either solve in closed-form, or iterate until convergence
+# Note that the initial condition *does* matter due to non-ergoticity, as all probability mass will be
+# sucked up by this small set of states...
+
+############################################################################################################
 
 library(maps)
 library(diagram)
 
-map('state', resoluion = 2)
-
-# Draw vectors from each state center to each other state's center
-# How to draw self-loops?
-# To start, don't worry about arrow width
+map('state', resolution = 1)
 
 for (i in 1:nrow(adj_df)){
   if (adj_df$score_diff[i] > 0){
@@ -52,7 +57,7 @@ for (i in 1:nrow(adj_df)){
     y1 <- Latitude[State==adj_df$state1[i]]
     x2 <- Longitude[State==adj_df$state2[i]]
     y2 <- Latitude[State==adj_df$state2[i]]
-    arrows(x1, y1, x2, y2, length=0.075, angle=15)
+    arrows(x1, y1, x2, y2, length=0.075, angle=15, lwd=10*adj_df$score_diff[i])
     # break
   }
 }
@@ -73,3 +78,41 @@ for (i in 1:nrow(adj_df)){
 # 3) Width-weighting w/o clutter (color-code? keep only dominant forwards arrow = score2-score1)
 
 detach(score_df)
+
+########################################################################################################
+
+# Convert to matrix, compute eigendecomposition
+adj_mat <- matrix(0, 50, 50)
+rownames(adj_mat) <- State
+colnames(adj_mat) <- State
+
+for (i in 1:nrow(adj_df)){
+  adj_mat[adj_df$state1[i],adj_df$state2[i]] <- adj_df$weight[i]
+}
+
+adj_mat <- adj_mat[-which(rownames(adj_mat) %in% c('Alaska','Hawaii')),-which(colnames(adj_mat) %in% c('Alaska','Hawaii'))]
+
+m <- adj_mat %^% 10000
+pi <- m[1,]
+
+# Plot steady-states upon the map
+colors <- sapply(pi, function(x) rgb(1, 0, 0,x/max(pi)))
+map(database = "state",regions = names(pi),col = colors,fill=T)
+
+# Noooope
+# This is terrible, states with shitty scores to begin with wind up attracting more people, because using ratios
+# Change to using normalized differences instead
+
+
+# eqn_system_A <- t(adj_mat - diag(48))
+# eqn_system_A <- rbind(adj_mat,rep(1,48))
+# eqn_system_b <- c(rep(0,48),1)
+# x <- qr.solve(eqn_system_A, eqn_system_b)
+# 
+# eig <- eigen(adj_mat)
+# eig2 <- eigen(t(adj_mat))
+# 
+# library(expm)
+
+
+
