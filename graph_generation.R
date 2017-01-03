@@ -92,6 +92,8 @@ for (i in 1:nrow(adj_df)){
 
 adj_mat <- adj_mat[-which(rownames(adj_mat) %in% c('Alaska','Hawaii')),-which(colnames(adj_mat) %in% c('Alaska','Hawaii'))]
 
+library(expm)
+
 m <- adj_mat %^% 10000
 pi <- m[1,]
 
@@ -111,8 +113,6 @@ map(database = "state",regions = names(pi),col = colors,fill=T)
 # 
 # eig <- eigen(adj_mat)
 # eig2 <- eigen(t(adj_mat))
-# 
-# library(expm)
 
 
 
