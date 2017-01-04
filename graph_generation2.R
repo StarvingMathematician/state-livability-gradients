@@ -43,6 +43,10 @@ adj_df$weight_diff_norm[is.na(adj_df$weight_diff_norm)] = 0
 
 ##################################################################################################################
 
+#########################################
+# Solving for steady-state and plotting #
+#########################################
+
 library(maps)
 library(diagram)
 library(expm)
@@ -78,11 +82,52 @@ m_diff <- adj_mat_diff %^% 10000
 # (i,j)th entry of m_diff tells you how much of final probability mass ends up in state j 
 # supposing that the initial state had been a 1-hot vector placing 100% of mass in state i
 #
-# Only fair way to break the tie is to use actual state populations
+# Only fair way to break the tie is to use actual state populations:
+population_df <- read.csv('state_population.csv', stringsAsFactors = FALSE)
+pi_diff <- population_df$PopulationNorm[!(population_df$State %in% c('Alaska','Hawaii'))] %*% m_diff
 
-# Plot steady-states upon the map
-colors <- sapply(pi, function(x) rgb(1, 0, 0,x/max(pi)))
-map(database = "state",regions = names(pi),col = colors,fill=T)
+####################
+# Plot Ratio Chain #
+####################
+
+# Plot steady-states on the map
+colors_ratio <- sapply(pi_ratio, function(x) rgb(1, 0, 0,x/max(pi_ratio)))
+map(database="state", regions=names(pi_ratio), col=colors_ratio, fill=T)
+
+tmp_ratio <- map('state',plot=FALSE,namesonly=TRUE) # getting the names used by map
+tmp_ratio <- match(gsub('(:.*)','',tmp_ratio),tolower(names(pi_ratio))) # matching (after adjusting using gsub and tolower)
+map('state',fill=TRUE,col=colors_ratio[tmp_ratio]) # convert your numbers to grey-scale and selct using the match
+
+for (i in 1:nrow(adj_df)){
+  if (!(adj_df$state1[i] %in% c('Alaska','Hawaii')) && adj_df$state1[i] != adj_df$state2[i]){
+    x1 <- Longitude[State==adj_df$state1[i]]
+    y1 <- Latitude[State==adj_df$state1[i]]
+    x2 <- Longitude[State==adj_df$state2[i]]
+    y2 <- Latitude[State==adj_df$state2[i]]
+    arrows(x1, y1, x2, y2, length=0.075, angle=30, lwd=10*adj_df$weight_ratio_norm[i])
+  }
+}
+
+###################
+# Plot Diff Chain #
+###################
+
+colors_diff <- sapply(pi_diff, function(x) rgb(1, 0, 0,x/max(pi_diff)))
+map(database="state", regions=names(pi_diff), col=colors_diff, fill=T)
+
+tmp_diff <- map('state',plot=FALSE,namesonly=TRUE) # getting the names used by map
+tmp_diff <- match(gsub('(:.*)','',tmp_diff),tolower(colnames(pi_diff))) # matching (after adjusting using gsub and tolower)
+map('state',fill=TRUE,col=colors_diff[tmp_diff]) # convert your numbers to grey-scale and selct using the match
+
+for (i in 1:nrow(adj_df)){
+  if (!(adj_df$state1[i] %in% c('Alaska','Hawaii')) && adj_df$state1[i] != adj_df$state2[i] && adj_df$weight_diff_norm[i] > 0){
+    x1 <- Longitude[State==adj_df$state1[i]]
+    y1 <- Latitude[State==adj_df$state1[i]]
+    x2 <- Longitude[State==adj_df$state2[i]]
+    y2 <- Latitude[State==adj_df$state2[i]]
+    arrows(x1, y1, x2, y2, length=0.075, angle=30, lwd=10*adj_df$weight_diff_norm[i])
+  }
+}
 
 ##################################################################################################################
 
