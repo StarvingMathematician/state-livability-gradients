@@ -2,11 +2,11 @@
 # Load and process the data #
 #############################
 
-score_df <- read.csv('state_scores_lat_long.csv', stringsAsFactors = FALSE)
+score_df <- read.csv('data/state_scores_lat_long.csv', stringsAsFactors = FALSE)
 
 attach(score_df)
 
-adj_list <- readLines('state_adjacency_list_sans_DC.txt')
+adj_list <- readLines('data/state_adjacency_list_sans_DC.txt')
 adj_list <- strsplit(adj_list,',')
 
 N <- length(unlist(adj_list))
@@ -43,9 +43,9 @@ adj_df$weight_diff_norm[is.na(adj_df$weight_diff_norm)] = 0
 
 ##################################################################################################################
 
-#########################################
-# Solving for steady-state and plotting #
-#########################################
+##########################
+# Solve for steady-state #
+##########################
 
 library(maps)
 library(diagram)
@@ -75,15 +75,14 @@ for (i in 1:nrow(adj_mat_diff)){
 m_ratio <- adj_mat_ratio %^% 10000
 pi_ratio <- m_ratio[1,]
 
-
 m_diff <- adj_mat_diff %^% 10000
 # pi_diff <- m_diff[1,]
 
 # (i,j)th entry of m_diff tells you how much of final probability mass ends up in state j 
 # supposing that the initial state had been a 1-hot vector placing 100% of mass in state i
-#
+
 # Only fair way to break the tie is to use actual state populations:
-population_df <- read.csv('state_population.csv', stringsAsFactors = FALSE)
+population_df <- read.csv('data/state_population.csv', stringsAsFactors = FALSE)
 pi_diff <- population_df$PopulationNorm[!(population_df$State %in% c('Alaska','Hawaii'))] %*% m_diff
 
 ####################
