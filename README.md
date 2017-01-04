@@ -1,8 +1,8 @@
-#### Purpose
+### Purpose
 
 I was curious about the migration of people across state lines in search of better job opportunities/higher quality of life, and how this would play out in a state such as Florida, which by most quality-of-life metrics is "better" than its neighboring states of Alabama and Georgia, and would therefore be expected to act as a population sink. To explore this idea further I obtained state-level quality-of-life data, population data, etc, and used it to simulate the long-run steady-state distribution of the US population as modeled by a Markov chain in which migration can only occur between adjacent states at each time step. I examined the behavior of two such Markov chains with different edge weightings.
 
-#### File Descriptions
+### File Descriptions
 
 * 'graph_generation2.R' - R code used to compute the Markov chain steady-states and visualize the results
 
@@ -12,7 +12,7 @@ I was curious about the migration of people across state lines in search of bett
 
 * 'visualizations/ratio-weighted_markov_chain_steady-state.png' - transition function is (normalized) P(s1,s2) = s2; weighted edges shown in black, steady-state shown in red; the chain is ergodic and therefore independent of initial state
 
-#### Data Sources
+### Data Sources
 
 * State livability data obtained from the "Quality of Life" subscore in CNBC's "America's Top States for Business 2016" ranking. Scores are out of a possible total of 325. Link to ranking: http://www.cnbc.com/2016/07/12/americas-top-states-for-business-2016-the-list-and-ranking.html
 
